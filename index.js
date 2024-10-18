@@ -33,6 +33,7 @@ async function run() {
     await client.connect();
 
     const itemCollection = client.db("addaGhorDB").collection("menuCollection");
+    const clientsDataCollection = client.db("addaGhorDB").collection("clientsDataCollection")
 
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -56,7 +57,7 @@ async function run() {
       const updatedItem = req.body;
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
-      const options = { upsert: false };
+      const options = { upsert: true };
 
       const item = {
         $set: {
@@ -79,6 +80,28 @@ async function run() {
       const result = await itemCollection.deleteOne(query);
       res.send(result);
     });
+
+    
+    // For adding new client with put operation
+    app.put("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const client = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert : true }
+      console.log( 'client here', client)
+      const clientInfo = {
+        $set: {
+          name: client.name,
+          email: client.email,
+        }
+      }
+      const result = await clientsDataCollection.updateOne(filter, clientInfo, options);
+      console.log(result)
+      res.send(result);
+
+    })
+
+
   } finally {
     // // Ensures that the client will close when you finish/error
     // await client.close();
