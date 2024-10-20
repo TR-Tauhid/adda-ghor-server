@@ -3,11 +3,7 @@ require("dotenv").config();
 const cors = require("cors");
 const app = express();
 const port = process.env.PORT || 5000;
-app.use(
-  cors({
-    origin: "*",
-  })
-);
+app.use(cors());
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
@@ -33,12 +29,16 @@ async function run() {
     await client.connect();
 
     const itemCollection = client.db("addaGhorDB").collection("menuCollection");
-    const clientsDataCollection = client.db("addaGhorDB").collection("clientsDataCollection")
+    const clientsDataCollection = client
+      .db("addaGhorDB")
+      .collection("clientsDataCollection");
 
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
+
+    // Add items to menu list
 
     app.post("/editItems", async (req, res) => {
       const newItem = req.body;
@@ -47,11 +47,15 @@ async function run() {
       res.send(result);
     });
 
+    // Fetch menu items
+
     app.get("/menus", async (req, res) => {
       const cursor = itemCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    // Update Items through put
 
     app.put(`/editItems/:id`, async (req, res) => {
       const updatedItem = req.body;
@@ -71,7 +75,6 @@ async function run() {
 
       const result = await itemCollection.updateOne(filter, item, options);
       res.send(result);
-
     });
 
     app.delete("/editItems/:id", async (req, res) => {
@@ -81,27 +84,44 @@ async function run() {
       res.send(result);
     });
 
-    
-    // For adding new client with put operation
-    app.put("/users/:id", async (req, res) => {
+    // Update new and existing user data through put operation
+
+    app.put(`/login/:id`, async (req, res) => {
       const id = req.params.id;
-      const client = req.body;
-      const filter = { _id: new ObjectId(id) };
-      const options = { upsert : true }
-      console.log( 'client here', client)
+      const userData = req.body;
+      const filter = { uid: id };
+      const options = { upsert: true, new: true };
       const clientInfo = {
         $set: {
-          name: client.name,
-          email: client.email,
-        }
-      }
-      const result = await clientsDataCollection.updateOne(filter, clientInfo, options);
-      console.log(result)
+          name: userData.name,
+          email: userData.email,
+          uid: userData.uid,
+        },
+      };
+      const result = await clientsDataCollection.updateOne(
+        filter,
+        clientInfo,
+        options
+      );
       res.send(result);
+    });
 
-    })
+    // Fetch client list data
 
+    app.get("/users", async (req, res) => {
+      const cursor = clientsDataCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
+    // Delete client from db
+
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { uid: id };
+      const result = await clientsDataCollection.deleteOne(query);
+      res.send(result);
+    });
   } finally {
     // // Ensures that the client will close when you finish/error
     // await client.close();
