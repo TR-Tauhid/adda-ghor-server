@@ -3,15 +3,15 @@ require("dotenv").config();
 const cors = require("cors");
 const app = express();
 const port = process.env.PORT || 5000;
-app.use(cors());
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  next();
-});
+const corsOptions = {
+  origin: 'https://adda-ghor-7abd1.web.app',
+  credentials: true,
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 
 app.use(express.json());
+
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.lhuqf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
