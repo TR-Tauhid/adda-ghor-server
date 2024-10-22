@@ -8,12 +8,5 @@ The middleware or packages I have used in this project are:
 
 
 
-vercel json 
-
-   "routes": [
-     {
-       "src": "/(.*)",
-       "dest": "/",
-       "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
-     }
-   ],
+<!-- Problem couldn't solve -->
+Mongodb connection failure

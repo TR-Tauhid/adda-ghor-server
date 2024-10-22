@@ -3,40 +3,45 @@ require("dotenv").config();
 const cors = require("cors");
 const app = express();
 const port = process.env.PORT || 5000;
-const corsOptions = {
-  origin: 'https://adda-ghor-7abd1.web.app',
-  credentials: true,
-  optionSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
+app.use(cors());
 
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.lhuqf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
+
+
+const client = new MongoClient(
+  uri,
+  {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    },
+  }
+);
 
 async function run() {
   try {
     await client.connect();
+    await client.db("admin").command({ ping: 1 });
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
 
     const itemCollection = client.db("addaGhorDB").collection("menuCollection");
     const clientsDataCollection = client
       .db("addaGhorDB")
       .collection("clientsDataCollection");
-
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
 
     // Add items to menu list
 
@@ -133,4 +138,4 @@ app.get("/", (req, res) => {
   res.send("Hey there...!!! Server is running...!!!");
 });
 
-app.listen(port, "0.0.0.0", () => console.log(`Server is running at ${port}`));
+app.listen(port, () => console.log(`Server is running at ${port}`));
